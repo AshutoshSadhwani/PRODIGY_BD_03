@@ -1,6 +1,6 @@
 # PRODIGY_BD_03
-<br>
-**FEATURES**
+<br>**
+FEATURES**
 1. User Authentication & Authorization (JWT-based)
 2. CRUD Operations for managing entities
 3. Role-Based Access Control (Admin/User)
