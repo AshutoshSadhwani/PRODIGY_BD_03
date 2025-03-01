@@ -59,10 +59,10 @@ public class UserService {
         User user = userRepository.findByUsername(username);
 
         if (user != null) {
-            // ✅ Delete all journal entries of the user
+            // Delete all journal entries of the user
             journalEntryRepository.deleteAll(user.getJournalentries());
 
-            // ✅ Now delete the user
+            // Now delete the user
             userRepository.delete(user);
             return true;
         }
