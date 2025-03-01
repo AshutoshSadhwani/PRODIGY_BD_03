@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.journalapp.entity.User;
+import com.journalapp.repository.JournalEntryRepository;
 import com.journalapp.repository.UserRepository;
 
 @Service
@@ -20,6 +21,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private JournalEntryRepository journalEntryRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder; // Correctly inject PasswordEncoder
@@ -50,13 +54,28 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    public void deleteById(ObjectId id) {
-        userRepository.deleteById(id);
+    
+    public boolean deleteUserAndEntries(String username) {
+        User user = userRepository.findByUsername(username);
+
+        if (user != null) {
+            // ✅ Delete all journal entries of the user
+            journalEntryRepository.deleteAll(user.getJournalentries());
+
+            // ✅ Now delete the user
+            userRepository.delete(user);
+            return true;
+        }
+        return false;
     }
+
+    
 
     public User findByUserName(String username) {
         return userRepository.findByUsername(username);
     }
+
+	
 
 
 

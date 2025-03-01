@@ -1,6 +1,7 @@
 package com.journalapp.config;
 
 import com.journalapp.service.UserDetailsServiceImpl;
+
 import com.jwt.helper.JwtUtil;
 
 import jakarta.servlet.FilterChain;

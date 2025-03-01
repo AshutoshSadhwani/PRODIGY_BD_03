@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.journalapp.entity.User;
 import com.journalapp.repository.UserRepository;
 import com.journalapp.service.UserService;
+import com.jwt.helper.JwtUtil;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @RestController
@@ -29,6 +31,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @PutMapping
     public ResponseEntity<?> updateUser(@RequestBody User user) {
@@ -52,21 +57,39 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
 
-        userInDb.setUsername(user.getUsername());
-        userInDb.setPassword(passwordEncoder.encode(user.getPassword()));
+        // ✅ Ensure the user can only update their own account
+        if (!userInDb.getUsername().equals(username)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to update this user");
+        }
 
+        // ✅ Update fields only if provided
+        if (user.getUsername() != null && !user.getUsername().isEmpty()) {
+            userInDb.setUsername(user.getUsername());
+        }
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            userInDb.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+      
         userService.saveNewUser(userInDb);
-        return ResponseEntity.noContent().build();
+      
+     // 🔹 Generate a new JWT token since username changed
+        String newToken = jwtUtil.generateToken(userInDb.getUsername()); 
+
+        return ResponseEntity.ok().body("User updated successfully. Use new token: " + newToken);
     }
 
     @DeleteMapping
-	public ResponseEntity<?> deleteUserById() {
-    	
+    public ResponseEntity<?> deleteUserById() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
-        userRepository.deleteByUsername(authentication.getName());
-    	
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-		}
+        String username = authentication.getName();
+
+        boolean deleted = userService.deleteUserAndEntries(username);
+
+        if (deleted) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+    }
+
     
 }

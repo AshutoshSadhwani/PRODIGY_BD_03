@@ -1,6 +1,7 @@
 package com.journalapp.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import java.util.Optional;
@@ -24,21 +25,33 @@ public class JournalEntryService {
 	
 	@Transactional
 	public void saveEntry(JournalEntry journalEntry, String username) {
-		
-		try {
-			User user=userService.findByUserName(username);
-			journalEntry.setDate(LocalDateTime.now());
-			JournalEntry saved = journalEntryRepository.save(journalEntry);
-			user.getJournalentries().add(saved);
-//			user.setUsername(null);
-			userService.saveUser(user);
-		} catch (Exception e) {
-			System.out.println(e);
-			throw new RuntimeException("An error ocurred while saving the entry.",e);
-		}
-		
+	    try {
+	        User user = userService.findByUserName(username);
+	        
+	        // 🔥 Set the owner of this journal entry
+	        journalEntry.setUserId(user.getId().toString());
+
+	        // 🔥 Set the timestamp
+	        journalEntry.setDate(LocalDateTime.now());
+
+	        // 🔥 Save the journal entry
+	        JournalEntry saved = journalEntryRepository.save(journalEntry);
+
+	        // 🔥 Ensure user's journal entry list is not null
+	        if (user.getJournalentries() == null) {
+	            user.setJournalentries(new ArrayList<>());
+	        }
+
+	        // 🔥 Add the saved journal entry to the user's list
+	        user.getJournalentries().add(saved);
+	        userService.saveUser(user);
+
+	    } catch (Exception e) {
+	        System.out.println(e);
+	        throw new RuntimeException("An error occurred while saving the entry.", e);
+	    }
 	}
-	
+
 	public void saveEntry(JournalEntry journalEntry) {	
 		journalEntryRepository.save(journalEntry);
 	}
