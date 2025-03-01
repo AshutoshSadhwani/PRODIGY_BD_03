@@ -28,21 +28,21 @@ public class JournalEntryService {
 	    try {
 	        User user = userService.findByUserName(username);
 	        
-	        // 🔥 Set the owner of this journal entry
+	        //  Set the owner of this journal entry
 	        journalEntry.setUserId(user.getId().toString());
 
-	        // 🔥 Set the timestamp
+	        //  Set the timestamp
 	        journalEntry.setDate(LocalDateTime.now());
 
-	        // 🔥 Save the journal entry
+	        //  Save the journal entry
 	        JournalEntry saved = journalEntryRepository.save(journalEntry);
 
-	        // 🔥 Ensure user's journal entry list is not null
+	        //  Ensure user's journal entry list is not null
 	        if (user.getJournalentries() == null) {
 	            user.setJournalentries(new ArrayList<>());
 	        }
 
-	        // 🔥 Add the saved journal entry to the user's list
+	        //  Add the saved journal entry to the user's list
 	        user.getJournalentries().add(saved);
 	        userService.saveUser(user);
 
